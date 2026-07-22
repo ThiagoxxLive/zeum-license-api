@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    tty: true
+    ports:
+      - "8090:8080"
+    volumes:
+      - .:/app:cached
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+    working_dir: /app
+    env_file:
+      - .env
+    networks:
+      - zeum_admin_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  zeum_admin_network:
+    name: zeum-admin-api_network_default
+    external: true
+
+volumes:
+  go_mod_cache:
+  go_build_cache:

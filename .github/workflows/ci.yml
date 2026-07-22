@@ -1,0 +1,55 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DEPLOY_PATH: /home/zeum.com.br/license.zeum.com.br/api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Run Tests
+        run: go test ./... -v
+
+      - name: Build Binary
+        env:
+          CGO_ENABLED: '0'
+          GOOS: linux
+          GOARCH: amd64
+        run: go build -o app ./cmd/api
+
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Deploy Binary
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./app "${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_PATH }}/app"
+
+      - name: Restart Service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -e
+            chmod +x ${{ env.DEPLOY_PATH }}/app
+            sudo systemctl restart zeum-license-api
