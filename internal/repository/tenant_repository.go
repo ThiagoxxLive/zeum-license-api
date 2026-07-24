@@ -35,3 +35,23 @@ func (r *TenantRepository) FindByLicenseNumber(licenseNumber string) (*entity.Te
 
 	return &tenant, nil
 }
+
+// FindByID acha um tenant pelo ID.
+// Retorna (nil, nil) quando não encontrado, análogo ao getOneOrNullResult do Doctrine.
+func (r *TenantRepository) FindByID(id uint) (*entity.Tenant, error) {
+
+	var tenant entity.Tenant
+
+	result := r.db.First(&tenant, id)
+
+	if result.Error != nil {
+
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, result.Error
+	}
+
+	return &tenant, nil
+}

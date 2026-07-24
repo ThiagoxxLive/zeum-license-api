@@ -99,3 +99,20 @@ func (s *LicenseService) FindByLicenseNumber(licenseNumber string) (*dto.License
 		Applications: applications,
 	}, nil
 }
+
+func (s *LicenseService) FindLicenseNumberByTenantID(tenantID uint) (*dto.LicenseNumberResponse, error) {
+
+	tenant, err := s.tenantRepository.FindByID(tenantID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenant == nil {
+		return nil, apperror.ErrTenantNotFound
+	}
+
+	return &dto.LicenseNumberResponse{
+		LicenseNumber: tenant.LicenseNumber,
+	}, nil
+}

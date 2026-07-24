@@ -45,5 +45,10 @@ func NewRouter(
 		profileController.FindAction,
 	)
 
+	// Grupo à parte: aceita somente X-API-Key, sem o fallback para Bearer JWT do Keycloak.
+	v1APIKeyOnly := engine.Group("/api/v1")
+	v1APIKeyOnly.Use(middleware.APIKeyAuth(cfg, applicationRepository))
+	v1APIKeyOnly.GET("/tenant/:id/license-number", middleware.RateLimit(globalLimiter), licenseController.FindLicenseNumberByTenantAction)
+
 	return engine
 }

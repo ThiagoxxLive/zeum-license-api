@@ -6,4 +6,5 @@ var (
 	ErrLicenseNotFound = errors.New("Licença não encontrada.")
 	ErrLicenseExpired  = errors.New("Licença expirada.")
 	ErrProfileNotFound = errors.New("Perfil do usuário não encontrado.")
+	ErrTenantNotFound  = errors.New("Tenant não encontrado.")
 )

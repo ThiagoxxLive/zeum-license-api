@@ -19,6 +19,16 @@ const apiKeyHeaderName = "X-API-Key"
 
 const applicationContextKey = "application"
 
+// APIKeyAuth exige exclusivamente o header X-API-Key, sem o fallback para
+// Bearer JWT do Keycloak feito por Auth(). Use em rotas que só devem ser
+// chamadas por integrações server-to-server autenticadas via API Key.
+func APIKeyAuth(cfg *config.Config, applicationRepository *repository.ApplicationRepository) gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+		apiKeyAuth(ctx, cfg, applicationRepository)
+	}
+}
+
 // apiKeyAuth valida o header X-API-Key contra as Applications ativas,
 // equivalente a App\Security\ApiKeyAuthenticator::authenticate().
 func apiKeyAuth(ctx *gin.Context, cfg *config.Config, applicationRepository *repository.ApplicationRepository) {

@@ -43,3 +43,7 @@ type LicenseResponse struct {
 	Tenant       TenantResponse         `json:"tenant"`
 	Applications []ApplicationResponse `json:"applications"`
 }
+
+type LicenseNumberResponse struct {
+	LicenseNumber string `json:"license_number"`
+}
