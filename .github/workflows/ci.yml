@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  IMAGE: registry.zeum.com.br/license-api
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -24,24 +27,51 @@ jobs:
       - name: Run Tests
         run: go test ./... -v
 
-  deploy:
+  build-and-push:
     needs: test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build and deploy on server
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.zeum.com.br
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.prod
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=registry,ref=${{ env.IMAGE }}:latest
+          cache-to: type=inline
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update service on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
-          command_timeout: 10m
+          command_timeout: 5m
           script_stop: true
           script: |
 
-            cd /root/license-api-git
-            git pull
+            docker login registry.zeum.com.br -u ${{ secrets.REGISTRY_USER }} -p ${{ secrets.REGISTRY_PASSWORD }}
 
-            docker build -t zeum-license-api:latest -f Dockerfile.prod .
-
-            docker service update --force --image zeum-license-api:latest license-api-evyidx_api
+            docker service update --with-registry-auth --force --image ${{ env.IMAGE }}:${{ github.sha }} license-api-evyidx_api
