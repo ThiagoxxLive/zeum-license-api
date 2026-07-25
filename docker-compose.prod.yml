@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: zeum-license-api:latest
+    environment:
+      - APP_PORT=${APP_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+      - DEFUSE_SECRET=${DEFUSE_SECRET}
+      - KEYCLOAK_BASE_URL=${KEYCLOAK_BASE_URL}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
