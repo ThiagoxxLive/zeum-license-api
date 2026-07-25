@@ -27,10 +27,14 @@ func NewRouter(
 	licenseController *controller.LicenseController,
 	profileController *controller.ProfileController,
 	profileService *service.ProfileService,
+	healthController *controller.HealthController,
 ) *gin.Engine {
 
 	engine := gin.Default()
 	engine.Use(middleware.SecurityHeaders())
+
+	engine.GET("/health", healthController.CheckAction)
+	engine.GET("/ping", healthController.PingAction)
 
 	globalLimiter := ratelimit.NewSlidingWindow(globalRateLimit, time.Minute)
 	strictLimiter := ratelimit.NewSlidingWindow(strictRateLimit, time.Minute)

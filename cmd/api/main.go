@@ -68,6 +68,7 @@ func main() {
 			service.NewProfileService,
 			controller.NewLicenseController,
 			controller.NewProfileController,
+			controller.NewHealthController,
 			router.NewRouter,
 			NewHTTPServer,
 		),
