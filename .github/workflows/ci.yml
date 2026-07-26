@@ -62,16 +62,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Update service on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          command_timeout: 5m
-          script_stop: true
-          script: |
-
-            docker login registry.zeum.com.br -u ${{ secrets.REGISTRY_USER }} -p ${{ secrets.REGISTRY_PASSWORD }}
-
-            docker service update --with-registry-auth --force --image ${{ env.IMAGE }}:${{ github.sha }} license-api-evyidx_api
+      - name: Trigger deploy via webhook
+        run: |
+          curl -sf -X POST "${{ secrets.CI_DEPLOY_URL }}" \
+            -u "${{ secrets.CI_CLIENT_ID }}:${{ secrets.CI_CLIENT_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"service": "license-api-evyidx_api", "image": "${{ env.IMAGE }}:${{ github.sha }}"}'
